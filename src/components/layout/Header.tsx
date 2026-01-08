@@ -1,10 +1,14 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import { useConfigStore } from "../../state/useConfigStore";
 
 type HeaderProps = {
   drawerWidth: number;
 };
 
 export function Header({ drawerWidth }: HeaderProps) {
+  const { config } = useConfigStore();
+  const title = config?.name ?? "OpenAPI Admin Console";
+
   return (
     <AppBar
       position="fixed"
@@ -28,7 +32,7 @@ export function Header({ drawerWidth }: HeaderProps) {
             }}
           />
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            Agentaux Admin
+            {title}
           </Typography>
         </Box>
         <Button variant="outlined" color="primary">

@@ -4,6 +4,8 @@ This document defines the configuration file used to drive navigation, list rend
 
 ## Top-level fields
 
+- `name` (string, optional)
+  - Application name shown in the header.
 - `oas_source` (string, required)
   - Local file path or URL to the OpenAPI document.
 - `api_base_url` (string, optional)

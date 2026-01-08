@@ -85,6 +85,7 @@ const NavItemSchema: z.ZodType<any> = z.lazy(() =>
 
 export const ConsoleConfigSchema = z
   .object({
+    name: z.string().min(1).optional(),
     oas_source: z.string().min(1),
     api_base_url: z.string().url().optional(),
     security_config: SecurityConfigSchema.optional(),
