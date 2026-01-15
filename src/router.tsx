@@ -4,6 +4,8 @@ import { CollectionPage } from "./pages/CollectionPage";
 import { DetailPage } from "./pages/DetailPage";
 import { FormPage } from "./pages/FormPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
+import { OAuthSilentCallbackPage } from "./pages/OAuthSilentCallbackPage";
 import { useConfigStore } from "./state/useConfigStore";
 import { NavItem } from "../schemas/config.schema";
 import { encodeCollectionPath } from "./utils/routes";
@@ -36,6 +38,8 @@ function DefaultCollectionRedirect() {
 export function AppRoutes() {
   return (
     <Routes>
+      <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+      <Route path="/oauth/silent" element={<OAuthSilentCallbackPage />} />
       <Route path="/" element={<DefaultCollectionRedirect />} />
       <Route path="/collections" element={<DefaultCollectionRedirect />} />
       <Route path="/:collectionPath" element={<CollectionPage />} />

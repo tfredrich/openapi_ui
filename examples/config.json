@@ -5,8 +5,7 @@
   "security_config": {
     "type": "oauth2",
     "client_id": "admin-console-client",
-    "auth_url": "https://auth.example.com/oauth/authorize",
-    "token_url": "https://auth.example.com/oauth/token",
+    "authority": "https://auth.example.com",
     "scopes": ["admin:read", "admin:write"]
   },
   "navigation": [

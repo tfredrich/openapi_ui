@@ -1,12 +1,11 @@
 import { z } from "zod";
 
-const SecurityConfigSchema = z
+export const SecurityConfigSchema = z
   .object({
     type: z.enum(["oauth2", "bearer", "none"]),
     client_id: z.string().min(1).optional(),
     client_secret: z.string().min(1).optional(),
-    auth_url: z.string().url().optional(),
-    token_url: z.string().url().optional(),
+    authority: z.string().url().optional(),
     scopes: z.array(z.string().min(1)).optional(),
     audience: z.string().min(1).optional(),
   })
@@ -19,11 +18,11 @@ const SecurityConfigSchema = z
           path: ["client_id"],
         });
       }
-      if (!value.auth_url || !value.token_url) {
+      if (!value.authority) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "security_config.auth_url and token_url are required for oauth2",
-          path: ["auth_url"],
+          message: "security_config.authority is required for oauth2",
+          path: ["authority"],
         });
       }
     }
@@ -95,3 +94,4 @@ export const ConsoleConfigSchema = z
 
 export type ConsoleConfig = z.infer<typeof ConsoleConfigSchema>;
 export type NavItem = z.infer<typeof NavItemSchema>;
+export type SecurityConfig = z.infer<typeof SecurityConfigSchema>;

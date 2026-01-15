@@ -7,6 +7,8 @@ export type RequestOptions = {
   body?: unknown;
 };
 
+import { getAuthorizationHeader, isOAuthEnabled, startOAuthLogin } from "./oauth";
+
 export async function apiRequest<T = unknown>(options: RequestOptions): Promise<T> {
   const { baseUrl, path, method = "GET", headers, query, body } = options;
   const url = new URL(path, baseUrl);
@@ -19,10 +21,21 @@ export async function apiRequest<T = unknown>(options: RequestOptions): Promise<
     });
   }
 
+  let authHeader: string | undefined;
+  if (isOAuthEnabled()) {
+    const header = await getAuthorizationHeader();
+    if (!header) {
+      await startOAuthLogin();
+      throw new Error("Not authenticated");
+    }
+    authHeader = header;
+  }
+
   const response = await fetch(url.toString(), {
     method,
     headers: {
       "Content-Type": "application/json",
+      ...(authHeader ? { Authorization: authHeader } : {}),
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,

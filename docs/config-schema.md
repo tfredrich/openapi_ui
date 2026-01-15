@@ -45,7 +45,7 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 ### OAuth2
 - `type`: `"oauth2"`
 - `client_id`: required
-- `auth_url`, `token_url`: required
+- `authority`: required (OIDC discovery base URL)
 - `client_secret`: optional
 - `scopes`, `audience`: optional
 
@@ -59,7 +59,7 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 
 - A navigation item must have either `path` or `children` (not both).
 - `display_fields` entries must be non-empty strings.
-- If `security_config.type` is `oauth2`, `client_id`, `auth_url`, and `token_url` are required.
+- If `security_config.type` is `oauth2`, `client_id` and `authority` are required.
 
 ## Examples
 
