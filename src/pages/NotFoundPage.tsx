@@ -10,8 +10,8 @@ export function NotFoundPage() {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
         The page you are looking for does not exist.
       </Typography>
-      <Button component={RouterLink} to="/collections" variant="contained">
-        Back to collections
+      <Button component={RouterLink} to="/" variant="contained">
+        Back to home
       </Button>
     </Box>
   );

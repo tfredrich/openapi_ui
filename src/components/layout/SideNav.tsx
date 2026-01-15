@@ -18,7 +18,7 @@ export function SideNav() {
 
   const isActive = (path?: string) => {
     if (!path) return false;
-    const target = `/collections/${encodeCollectionPath(path)}`;
+    const target = `/${encodeCollectionPath(path)}`;
     return location.pathname.startsWith(target);
   };
 
@@ -46,7 +46,7 @@ export function SideNav() {
         <ListItemButton
           key={key}
           component={RouterLink}
-          to={`/collections/${encodeCollectionPath(path)}`}
+          to={`/${encodeCollectionPath(path)}`}
           selected={isActive(path)}
           sx={{ pl: 2 + depth * 2 }}
         >

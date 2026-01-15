@@ -140,7 +140,7 @@ export function CollectionPage() {
             variant="contained"
             component={RouterLink}
             disabled={!hasCreate}
-            to={resolvedPath ? `/collections/${collectionPath}/new` : "/collections"}
+            to={resolvedPath ? `/${collectionPath}/new` : "/"}
           >
             + Create
           </Button>
@@ -191,7 +191,7 @@ export function CollectionPage() {
                       const rowId = getRowId(row, resolvedFields, resourceEntry?.resourceIdParamName);
                       const to =
                         rowId && collectionPath && resourceEntry?.get
-                          ? `/collections/${collectionPath}/${encodeURIComponent(String(rowId))}`
+                          ? `/${collectionPath}/${encodeURIComponent(String(rowId))}`
                           : undefined;
                       return (
                         <TableRow
@@ -256,7 +256,7 @@ export function CollectionPage() {
           <MenuItem
             onClick={() => {
               if (collectionPath) {
-                navigate(`/collections/${collectionPath}/${encodeURIComponent(String(selectedRowId))}`);
+                navigate(`/${collectionPath}/${encodeURIComponent(String(selectedRowId))}`);
               }
               setMenuAnchor(null);
             }}
@@ -269,7 +269,7 @@ export function CollectionPage() {
             onClick={() => {
               if (collectionPath) {
                 navigate(
-                  `/collections/${collectionPath}/${encodeURIComponent(String(selectedRowId))}/edit`
+                  `/${collectionPath}/${encodeURIComponent(String(selectedRowId))}/edit`
                 );
               }
               setMenuAnchor(null);

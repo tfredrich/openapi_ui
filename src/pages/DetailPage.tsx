@@ -125,7 +125,7 @@ export function DetailPage() {
         {resourceEntry?.put && id && (
           <MenuItem
             component={RouterLink}
-            to={`/collections/${collectionPath}/${encodeURIComponent(id)}/edit`}
+            to={`/${collectionPath}/${encodeURIComponent(id)}/edit`}
             onClick={() => setMenuAnchor(null)}
           >
             Edit

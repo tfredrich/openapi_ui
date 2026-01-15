@@ -1,5 +1,7 @@
-import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Box, Button, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
+import { useState } from "react";
 import { useConfigStore } from "../../state/useConfigStore";
+import { useAuthStore } from "../../state/useAuthStore";
 
 type HeaderProps = {
   drawerWidth: number;
@@ -8,6 +10,12 @@ type HeaderProps = {
 export function Header({ drawerWidth }: HeaderProps) {
   const { config } = useConfigStore();
   const title = config?.name ?? "OpenAPI Admin Console";
+  const { user } = useAuthStore();
+  const userName = user?.name ?? "Admin User";
+  const avatarUrl =
+    user?.avatarUrl ??
+    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%25' height='100%25' fill='%23d7e4df'/><circle cx='32' cy='24' r='12' fill='%2385a59a'/><rect x='14' y='40' width='36' height='16' rx='8' fill='%2385a59a'/></svg>";
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   return (
     <AppBar
@@ -35,9 +43,21 @@ export function Header({ drawerWidth }: HeaderProps) {
             {title}
           </Typography>
         </Box>
-        <Button variant="outlined" color="primary">
-          Get started
-        </Button>
+        <Box>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={(event) => setAnchorEl(event.currentTarget)}
+            startIcon={<Avatar alt={userName} src={avatarUrl} sx={{ width: 28, height: 28 }} />}
+            sx={{ textTransform: "none" }}
+          >
+            {userName}
+          </Button>
+          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+            <MenuItem onClick={() => setAnchorEl(null)}>Settings</MenuItem>
+            <MenuItem onClick={() => setAnchorEl(null)}>Logout</MenuItem>
+          </Menu>
+        </Box>
       </Toolbar>
     </AppBar>
   );

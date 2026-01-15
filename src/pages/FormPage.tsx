@@ -81,7 +81,7 @@ export function FormPage({ mode }: FormPageProps) {
     if (mode === "create" && resolvedPath) {
       try {
         await apiRequest({ baseUrl, path: resolvedPath, method: "POST", body: formData });
-        navigate(`/collections/${collectionPath}`);
+        navigate(`/${collectionPath}`);
         return;
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : "Failed to create resource");
@@ -92,7 +92,7 @@ export function FormPage({ mode }: FormPageProps) {
     if (mode === "edit" && resourceInstancePath) {
       try {
         await apiRequest({ baseUrl, path: resourceInstancePath, method: "PUT", body: formData });
-        navigate(`/collections/${collectionPath}/${encodeURIComponent(String(id))}`);
+        navigate(`/${collectionPath}/${encodeURIComponent(String(id))}`);
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : "Failed to update resource");
       } finally {
@@ -111,11 +111,11 @@ export function FormPage({ mode }: FormPageProps) {
           variant="outlined"
           onClick={() => {
             if (mode === "edit" && collectionPath && id) {
-              navigate(`/collections/${collectionPath}/${encodeURIComponent(String(id))}`);
+              navigate(`/${collectionPath}/${encodeURIComponent(String(id))}`);
             } else if (collectionPath) {
-              navigate(`/collections/${collectionPath}`);
+              navigate(`/${collectionPath}`);
             } else {
-              navigate("/collections");
+              navigate("/");
             }
           }}
         >
