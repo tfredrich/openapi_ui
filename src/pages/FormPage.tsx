@@ -1,7 +1,8 @@
 import { Box, Button, Card, CardContent, Typography } from "@mui/material";
-import Form from "@rjsf/core";
-import validator from "@rjsf/validator-ajv8";
-import { useMemo, useState } from "react";
+import { Form } from "@rjsf/mui";
+import { customizeValidator } from "@rjsf/validator-ajv8";
+import Ajv2020 from "ajv/dist/2020";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { decodeCollectionPath, buildResourcePath } from "../utils/routes";
 import { useRegistryStore } from "../state/useRegistryStore";
@@ -16,6 +17,8 @@ type FormPageProps = {
   mode: "create" | "edit";
 };
 
+const validator = customizeValidator({ AjvClass: Ajv2020 });
+
 export function FormPage({ mode }: FormPageProps) {
   const { collectionPath } = useParams();
   const { id } = useParams();
@@ -26,6 +29,7 @@ export function FormPage({ mode }: FormPageProps) {
   const navigate = useNavigate();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formState, setFormState] = useState<any>(undefined);
 
   const collectionEntry = resolvedPath ? registry?.collections[resolvedPath] : undefined;
   const resourcePath = resolvedPath ? registry?.resourceByCollection[resolvedPath] : undefined;
@@ -74,6 +78,13 @@ export function FormPage({ mode }: FormPageProps) {
     queryFn: () => apiRequest({ baseUrl: baseUrl!, path: resourceInstancePath! }),
   });
 
+  useEffect(() => {
+    if (mode !== "edit") return;
+    if (formData && formState === undefined) {
+      setFormState(formData);
+    }
+  }, [formData, formState, mode]);
+
   const handleSubmit = async ({ formData }: { formData: any }) => {
     if (!baseUrl || !schema) return;
     setSubmitError(null);
@@ -85,6 +96,7 @@ export function FormPage({ mode }: FormPageProps) {
         return;
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : "Failed to create resource");
+        setFormState(formData);
       } finally {
         setIsSubmitting(false);
       }
@@ -95,9 +107,20 @@ export function FormPage({ mode }: FormPageProps) {
         navigate(`/${collectionPath}/${encodeURIComponent(String(id))}`);
       } catch (error) {
         setSubmitError(error instanceof Error ? error.message : "Failed to update resource");
+        setFormState(formData);
       } finally {
         setIsSubmitting(false);
       }
+    }
+  };
+
+  const handleCancel = () => {
+    if (mode === "edit" && collectionPath && id) {
+      navigate(`/${collectionPath}/${encodeURIComponent(String(id))}`);
+    } else if (collectionPath) {
+      navigate(`/${collectionPath}`);
+    } else {
+      navigate("/");
     }
   };
 
@@ -107,34 +130,32 @@ export function FormPage({ mode }: FormPageProps) {
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
           {mode === "create" ? "Create" : "Update"} Resource
         </Typography>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            if (mode === "edit" && collectionPath && id) {
-              navigate(`/${collectionPath}/${encodeURIComponent(String(id))}`);
-            } else if (collectionPath) {
-              navigate(`/${collectionPath}`);
-            } else {
-              navigate("/");
-            }
-          }}
-        >
+        <Button variant="outlined" onClick={handleCancel}>
           Cancel
         </Button>
       </Box>
       <Card variant="outlined">
         <CardContent>
+          {submitError && (
+            <Typography variant="subtitle2" color="error" sx={{ mb: 2 }}>
+              {submitError}
+            </Typography>
+          )}
           {schema ? (
             <Form
               schema={schema as any}
               validator={validator}
               uiSchema={uiSchema}
-              formData={mode === "edit" ? formData : undefined}
+              formData={mode === "edit" ? formState ?? formData : formState}
               disabled={(mode === "edit" && isLoadingData) || isSubmitting}
+              onChange={({ formData }) => setFormState(formData)}
               onSubmit={handleSubmit}
               onError={() => undefined}
             >
-              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, mt: 2 }}>
+                <Button variant="outlined" onClick={handleCancel} disabled={isSubmitting}>
+                  Cancel
+                </Button>
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
                   Save
                 </Button>
@@ -143,11 +164,6 @@ export function FormPage({ mode }: FormPageProps) {
           ) : (
             <Typography variant="body2" color="text.secondary">
               No schema available for this resource.
-            </Typography>
-          )}
-          {submitError && (
-            <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-              {submitError}
             </Typography>
           )}
         </CardContent>
