@@ -41,7 +41,7 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
   "security_config": {
     "type": "oauth2",
     "client_id": "YOUR_CLIENT_ID",
-    "authority": "https://auth.example.com",
+    "as_base_url": "https://auth.example.com",
     "scopes": ["openid", "profile", "offline_access", "admin:read", "admin:write"]
   },
   "navigation": [
@@ -58,7 +58,7 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
 
 - `type`: must be `"oauth2"`
 - `client_id`: your OAuth/OIDC client ID
-- `authority`: your OIDC issuer base URL (discovery at `/.well-known/openid-configuration`)
+- `as_base_url`: your Authorization Server base URL (discovery at `/.well-known/openid-configuration`)
 - `scopes`: include at least `openid`; add `offline_access` if you want refresh tokens
 - `audience`: optional, for providers that require it
 
@@ -90,7 +90,7 @@ The app automatically attaches an `Authorization: Bearer <access_token>` header 
 
 ## Troubleshooting
 
-- If login redirects succeed but API calls still 401, verify the authority URL and required scopes.
+- If login redirects succeed but API calls still 401, verify the `as_base_url` and required scopes.
 - If refresh tokens do not work, confirm `offline_access` is allowed for your client.
 - Ensure your OIDC provider serves a valid discovery document at `/.well-known/openid-configuration`.
 

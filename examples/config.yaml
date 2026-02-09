@@ -4,7 +4,7 @@ api_base_url: https://api.example.com
 security_config:
   type: oauth2
   client_id: admin-console-client
-  authority: https://auth.example.com
+  as_base_url: https://auth.example.com
   scopes:
     - admin:read
     - admin:write

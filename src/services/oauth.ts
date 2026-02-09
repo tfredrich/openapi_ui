@@ -1,6 +1,7 @@
-import { User, UserManager, WebStorageStateStore } from "oidc-client-ts";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client-ts";
 import { SecurityConfig } from "../../schemas/config.schema";
 import { useAuthStore } from "../state/useAuthStore";
+import { json } from "zod/v4";
 
 const ACCESS_TOKEN_COOKIE = "oidc_access_token";
 const REFRESH_TOKEN_COOKIE = "oidc_refresh_token";
@@ -12,6 +13,7 @@ let userManager: UserManager | null = null;
 let removeUserLoaded: (() => void) | null = null;
 let removeUserUnloaded: (() => void) | null = null;
 let refreshPromise: Promise<User | null> | null = null;
+let initPromise: Promise<void> | null = null;
 
 function setCookie(name: string, value: string, maxAgeSeconds?: number) {
   const secure = window.location.protocol === "https:" ? "; Secure" : "";
@@ -74,14 +76,29 @@ export function clearTokens() {
   useAuthStore.getState().setAccessToken(null);
 }
 
-function buildUserManager(config: SecurityConfig) {
+async function buildUserManagerSettings(config: SecurityConfig): Promise<UserManagerSettings> {
   const redirectUri = `${window.location.origin}/oauth/callback`;
   const silentRedirectUri = `${window.location.origin}/oauth/silent`;
   const scope = config.scopes?.length ? config.scopes.join(" ") : "openid profile";
-  const authority = config.authority ?? window.location.origin;
-
-  return new UserManager({
+  const asBaseUrl = (config.as_base_url ?? "").trim();
+  if (!asBaseUrl) {
+    throw new Error("OAuth AS base URL is required");
+  }
+  const normalizedBase = asBaseUrl.endsWith("/") ? asBaseUrl : `${asBaseUrl}/`;
+  const metadataUrl = new URL(".well-known/openid-configuration", normalizedBase).toString();
+  const response = await fetch(metadataUrl);
+  if (!response.ok) {
+    throw new Error(`OIDC discovery failed: ${response.status}`);
+  }
+  const metadata = (await response.json()) as Record<string, unknown>;
+  const issuer = typeof metadata.issuer === "string" ? metadata.issuer : "";
+  if (!issuer) {
+    throw new Error("OIDC discovery response missing issuer");
+  }
+  const authority = issuer;
+  return {
     authority,
+    metadata,
     client_id: config.client_id ?? "",
     redirect_uri: redirectUri,
     silent_redirect_uri: silentRedirectUri,
@@ -92,7 +109,7 @@ function buildUserManager(config: SecurityConfig) {
     extraQueryParams: config.audience ? { audience: config.audience } : undefined,
     userStore: new WebStorageStateStore({ store: window.sessionStorage }),
     stateStore: new WebStorageStateStore({ store: window.sessionStorage }),
-  });
+  };
 }
 
 export function setOAuthConfig(config?: SecurityConfig) {
@@ -102,51 +119,68 @@ export function setOAuthConfig(config?: SecurityConfig) {
   removeUserLoaded = null;
   removeUserUnloaded = null;
   userManager = null;
+  initPromise = null;
 
   if (!config || config.type !== "oauth2") {
     return;
   }
-
-  userManager = buildUserManager(config);
-  removeUserLoaded = userManager.events.addUserLoaded((user) => setTokenCookies(user));
-  removeUserUnloaded = userManager.events.addUserUnloaded(() => clearTokens());
-  userManager.startSilentRenew();
-
-  void userManager.getUser().then((user) => {
-    if (user) {
-      setTokenCookies(user);
-    }
-  });
 }
 
 export function isOAuthEnabled() {
   return oauthConfig?.type === "oauth2";
 }
 
+async function initUserManager() {
+  if (userManager || !oauthConfig || oauthConfig.type !== "oauth2") {
+    return userManager;
+  }
+  if (!initPromise) {
+    initPromise = (async () => {
+      const settings = await buildUserManagerSettings(oauthConfig);
+      userManager = new UserManager(settings);
+      removeUserLoaded = userManager.events.addUserLoaded((user) => setTokenCookies(user));
+      removeUserUnloaded = userManager.events.addUserUnloaded(() => clearTokens());
+      userManager.startSilentRenew();
+      const user = await userManager.getUser();
+      if (user) {
+        setTokenCookies(user);
+      }
+    })().finally(() => {
+      initPromise = null;
+    });
+  }
+  await initPromise;
+  return userManager;
+}
+
 export async function startOAuthLogin(returnTo = window.location.pathname + window.location.search) {
-  if (!userManager) return;
-  await userManager.signinRedirect({ state: { returnTo } });
+  const manager = await initUserManager();
+  if (!manager) return;
+  await manager.signinRedirect({ state: { returnTo } });
 }
 
 export async function completeOAuthLogin(url = window.location.href) {
-  if (!userManager) {
+  const manager = await initUserManager();
+  if (!manager) {
     throw new Error("OAuth not configured");
   }
-  const user = await userManager.signinRedirectCallback(url);
+  const user = await manager.signinRedirectCallback(url);
   setTokenCookies(user);
   const state = user.state as { returnTo?: string } | null;
   return state?.returnTo ?? "/";
 }
 
 export async function completeSilentLogin(url = window.location.href) {
-  if (!userManager) return;
-  await userManager.signinSilentCallback(url);
+  const manager = await initUserManager();
+  if (!manager) return;
+  await manager.signinSilentCallback(url);
 }
 
 async function refreshWithUserManager() {
-  if (!userManager) return null;
+  const manager = await initUserManager();
+  if (!manager) return null;
   if (!refreshPromise) {
-    refreshPromise = userManager
+    refreshPromise = manager
       .signinSilent()
       .catch(() => null)
       .finally(() => {
@@ -161,8 +195,9 @@ export async function getAuthorizationHeader() {
   if (cookieToken) {
     return `${cookieToken.tokenType} ${cookieToken.accessToken}`;
   }
-  if (!userManager) return null;
-  const user = await userManager.getUser();
+  const manager = await initUserManager();
+  if (!manager) return null;
+  const user = await manager.getUser();
   if (user && !user.expired) {
     setTokenCookies(user);
     return `${user.token_type ?? "Bearer"} ${user.access_token}`;

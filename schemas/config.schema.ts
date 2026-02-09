@@ -5,7 +5,7 @@ export const SecurityConfigSchema = z
     type: z.enum(["oauth2", "bearer", "none"]),
     client_id: z.string().min(1).optional(),
     client_secret: z.string().min(1).optional(),
-    authority: z.string().url().optional(),
+    as_base_url: z.string().url().optional(),
     scopes: z.array(z.string().min(1)).optional(),
     audience: z.string().min(1).optional(),
   })
@@ -18,11 +18,11 @@ export const SecurityConfigSchema = z
           path: ["client_id"],
         });
       }
-      if (!value.authority) {
+      if (!value.as_base_url) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "security_config.authority is required for oauth2",
-          path: ["authority"],
+          message: "security_config.as_base_url is required for oauth2",
+          path: ["as_base_url"],
         });
       }
     }
