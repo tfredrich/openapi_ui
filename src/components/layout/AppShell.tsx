@@ -11,7 +11,7 @@ export function AppShell({ children }: PropsWithChildren) {
       sx={{
         display: "flex",
         minHeight: "100vh",
-        bgcolor: "#f5f6fa",
+        bgcolor: "background.default",
       }}
     >
       <Header drawerWidth={drawerWidth} />
@@ -23,8 +23,11 @@ export function AppShell({ children }: PropsWithChildren) {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            borderRight: "1px solid #e5e7eb",
-            bgcolor: "#f8f9fd",
+            borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+            bgcolor: (theme) =>
+              theme.palette.mode === "light"
+                ? theme.palette.grey[50]
+                : theme.palette.background.default,
           },
         }}
       >

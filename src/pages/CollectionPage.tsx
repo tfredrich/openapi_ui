@@ -22,8 +22,6 @@ import {
   DataGrid,
   GridColDef,
   GridPaginationModel,
-  GridRenderCellParams,
-  GridRowParams,
 } from "@mui/x-data-grid";
 import { buildResourcePath, decodeCollectionPath } from "../utils/routes";
 import { useConfigStore } from "../state/useConfigStore";
@@ -114,7 +112,7 @@ export function CollectionPage() {
     ? findListOverrides(config.navigation, resolvedPath)
     : undefined;
   const resolvedFields = applyListOverrides(displayFields, listOverrides);
-  const columns = useMemo<GridColDef<CollectionRow & { __resourceId?: string | number | null }>[]>(
+  const columns = useMemo<GridColDef[]>(
     () => [
       ...resolvedFields.map((field) => ({
         field,
@@ -122,8 +120,7 @@ export function CollectionPage() {
         flex: 1,
         minWidth: 140,
         sortable: false,
-        renderCell: (params: GridRenderCellParams<CollectionRow>) =>
-          formatCellValue(params.row?.[field]),
+        renderCell: (params: { row: CollectionRow }) => formatCellValue(params.row?.[field]),
       })),
       {
         field: "__actions",
@@ -134,9 +131,7 @@ export function CollectionPage() {
         disableColumnMenu: true,
         align: "right",
         headerAlign: "right",
-        renderCell: (
-          params: GridRenderCellParams<CollectionRow & { __resourceId?: string | number | null }>
-        ) =>
+        renderCell: (params: { row: CollectionRow & { __resourceId?: string | number | null } }) =>
           hasRowActions ? (
             <IconButton
               size="small"
@@ -262,17 +257,15 @@ export function CollectionPage() {
                       setRowsPerPage(model.pageSize);
                     }}
                     autoHeight
-                    onRowClick={(
-                      params: GridRowParams<CollectionRow & { __resourceId?: string | number | null }>
-                    ) => {
+                    onRowClick={(params: { row: CollectionRow & { __resourceId?: string | number | null } }) => {
                       const rowId = params.row?.__resourceId;
                       if (rowId === null || rowId === undefined || !collectionPath || !resourceEntry?.get) return;
                       navigate(`/${collectionPath}/${encodeURIComponent(String(rowId))}`);
                     }}
                     sx={{
-                      borderColor: "#e2e8f0",
+                      borderColor: "divider",
                       "& .MuiDataGrid-columnHeaders": {
-                        bgcolor: "#f8fafc",
+                        bgcolor: "action.hover",
                       },
                       "& .MuiDataGrid-row:hover": {
                         cursor: resourceEntry?.get ? "pointer" : "default",

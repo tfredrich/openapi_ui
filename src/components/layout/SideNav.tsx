@@ -23,6 +23,7 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import { alpha } from "@mui/material/styles";
 import { useConfigStore } from "../../state/useConfigStore";
 import { encodeCollectionPath } from "../../utils/routes";
 import { NavItem } from "../../../schemas/config.schema";
@@ -112,7 +113,7 @@ export function SideNav() {
             borderRadius: 2,
             mb: 0.5,
             "&.Mui-selected": {
-              bgcolor: "#e9edf7",
+              bgcolor: "action.selected",
             },
           }}
         >
@@ -130,9 +131,9 @@ export function SideNav() {
         sx={{
           px: 1.5,
           py: 1.25,
-          border: "1px solid #dbe2f0",
+          border: (theme) => `1px solid ${theme.palette.divider}`,
           borderRadius: 2.5,
-          bgcolor: "#ffffff",
+          bgcolor: "background.paper",
           mb: 2,
         }}
       >
@@ -172,9 +173,25 @@ export function SideNav() {
             <ListItemText primary="Feedback" />
           </ListItemButton>
         </List>
-        <Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2.5, bgcolor: "#ffffff", border: "1px solid #dbe2f0" }}>
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 1.5,
+            borderRadius: 2.5,
+            bgcolor: "background.paper",
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-            <Avatar sx={{ width: 34, height: 34, fontSize: 13, bgcolor: "#d9e4ff", color: "#1f3d7a" }}>
+            <Avatar
+              sx={{
+                width: 34,
+                height: 34,
+                fontSize: 13,
+                bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
+                color: "primary.main",
+              }}
+            >
               {userInitials}
             </Avatar>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
@@ -204,15 +221,15 @@ export function SideNav() {
             width: 240,
             borderRadius: 3,
             p: 1,
-            border: "1px solid #dbe2f0",
-            boxShadow: "0 8px 22px rgba(15, 23, 42, 0.12)",
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+            boxShadow: (theme) => theme.shadows[8],
           },
         }}
       >
         <MenuItem
           onClick={() => setUserMenuAnchor(null)}
           sx={{
-            border: "2px solid #8bb8ff",
+            border: (theme) => `2px solid ${theme.palette.primary.light}`,
             borderRadius: 3,
             mb: 0.5,
           }}
@@ -228,7 +245,7 @@ export function SideNav() {
           onClick={() => setUserMenuAnchor(null)}
           sx={{
             borderRadius: 2,
-            bgcolor: "#f3f4f6",
+            bgcolor: "action.hover",
             mt: 0.25,
             display: "flex",
             justifyContent: "space-between",

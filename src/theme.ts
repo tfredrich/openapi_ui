@@ -1,17 +1,23 @@
 import { createTheme } from "@mui/material/styles";
 
-export const theme = createTheme({
-  palette: {
-    mode: "light",
-    primary: {
-      main: "#1a7f5a",
+type PaletteMode = "light" | "dark";
+
+export function createAppTheme(mode: PaletteMode) {
+  const light = mode === "light";
+
+  return createTheme({
+    palette: {
+      mode,
+      primary: {
+        main: light ? "#1a7f5a" : "#5cc8a1",
+      },
+      background: {
+        default: light ? "#f5f6fa" : "#0f172a",
+        paper: light ? "#ffffff" : "#111827",
+      },
     },
-    background: {
-      default: "#f7f6f2",
-      paper: "#ffffff",
+    typography: {
+      fontFamily: "'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif",
     },
-  },
-  typography: {
-    fontFamily: "'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif",
-  },
-});
+  });
+}
