@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   AppBar,
   Box,
+  Breadcrumbs,
   Button,
   Chip,
   IconButton,
@@ -9,9 +10,11 @@ import {
   Menu,
   MenuItem,
   OutlinedInput,
+  Popover,
   Toolbar,
   Typography,
 } from "@mui/material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
@@ -22,6 +25,13 @@ import { alpha } from "@mui/material/styles";
 import { useConfigStore } from "../../state/useConfigStore";
 import { isDevAuthBypassEnabled } from "../../services/devAuthBypass";
 import { ThemePreference, useColorMode } from "../../providers/AppProviders";
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useLocation } from "react-router-dom";
+import { NavItem } from "../../../schemas/config.schema";
+import { encodeCollectionPath } from "../../utils/routes";
 
 type HeaderProps = {
   drawerWidth: number;
@@ -30,12 +40,18 @@ type HeaderProps = {
 export function Header({ drawerWidth }: HeaderProps) {
   const { config } = useConfigStore();
   const { preference, resolvedMode, setPreference } = useColorMode();
-  const title = config?.name ?? "OpenAPI Admin Console";
+  const location = useLocation();
+  const selectedNavLabel = useMemo(
+    () => findSelectedNavLabel(config?.navigation ?? [], location.pathname) ?? "Home",
+    [config?.navigation, location.pathname]
+  );
+  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const nowDate = useMemo(
-    () => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date()),
-    []
+    () => selectedDate.format("MMM D, YYYY"),
+    [selectedDate]
   );
   const isBypassEnabled = isDevAuthBypassEnabled();
+  const [dateAnchorEl, setDateAnchorEl] = useState<null | HTMLElement>(null);
   const [themeMenuAnchor, setThemeMenuAnchor] = useState<null | HTMLElement>(null);
 
   const themeIcon = resolvedMode === "dark" ? <DarkModeOutlinedIcon fontSize="small" /> : <LightModeOutlinedIcon fontSize="small" />;
@@ -55,8 +71,10 @@ export function Header({ drawerWidth }: HeaderProps) {
       }}
       sx={{
         borderRadius: 2,
-        mx: 0.5,
-        my: 0.25,
+        mx: 0.25,
+        my: 0.125,
+        minHeight: 34,
+        py: 0.5,
         ...(preference === value
           ? {
               bgcolor: (theme) => alpha(theme.palette.primary.main, 0.16),
@@ -83,14 +101,14 @@ export function Header({ drawerWidth }: HeaderProps) {
       }}
     >
       <Toolbar sx={{ display: "flex", justifyContent: "space-between", minHeight: 72 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
-            Dashboard
+        <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
+          <Typography variant="body2" color="text.secondary">
+            Home
           </Typography>
-          <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
-            {title}
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {selectedNavLabel}
           </Typography>
-        </Box>
+        </Breadcrumbs>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           {isBypassEnabled ? (
             <Chip
@@ -114,9 +132,40 @@ export function Header({ drawerWidth }: HeaderProps) {
               </InputAdornment>
             }
           />
-          <Button variant="outlined" color="inherit" startIcon={<CalendarMonthOutlinedIcon />} sx={{ textTransform: "none" }}>
+          <Button
+            variant="outlined"
+            color="inherit"
+            startIcon={<CalendarMonthOutlinedIcon />}
+            sx={{ textTransform: "none" }}
+            onClick={(event) => setDateAnchorEl(event.currentTarget)}
+          >
             {nowDate}
           </Button>
+          <Popover
+            open={Boolean(dateAnchorEl)}
+            anchorEl={dateAnchorEl}
+            onClose={() => setDateAnchorEl(null)}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            PaperProps={{
+              sx: {
+                mt: 1,
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                boxShadow: (theme) => theme.shadows[8],
+              },
+            }}
+          >
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DateCalendar
+                value={selectedDate}
+                onChange={(value) => {
+                  if (!value) return;
+                  setSelectedDate(value);
+                  setDateAnchorEl(null);
+                }}
+              />
+            </LocalizationProvider>
+          </Popover>
           <IconButton color="inherit">
             <NotificationsNoneOutlinedIcon fontSize="small" />
           </IconButton>
@@ -127,10 +176,11 @@ export function Header({ drawerWidth }: HeaderProps) {
             anchorEl={themeMenuAnchor}
             open={Boolean(themeMenuAnchor)}
             onClose={() => setThemeMenuAnchor(null)}
+            MenuListProps={{ dense: true }}
             PaperProps={{
               sx: {
                 mt: 1,
-                p: 0.75,
+                p: 0.5,
                 width: 180,
                 borderRadius: 3,
                 border: (theme) => `1px solid ${theme.palette.divider}`,
@@ -146,4 +196,20 @@ export function Header({ drawerWidth }: HeaderProps) {
       </Toolbar>
     </AppBar>
   );
+}
+
+function findSelectedNavLabel(items: NavItem[], pathname: string): string | undefined {
+  for (const item of items) {
+    if (item.path) {
+      const target = `/${encodeCollectionPath(item.path)}`;
+      if (pathname.startsWith(target)) {
+        return item.label;
+      }
+    }
+    if (item.children?.length) {
+      const nested = findSelectedNavLabel(item.children, pathname);
+      if (nested) return nested;
+    }
+  }
+  return undefined;
 }

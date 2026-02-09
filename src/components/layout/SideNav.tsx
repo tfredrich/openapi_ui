@@ -23,11 +23,40 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
+import KeyOutlinedIcon from "@mui/icons-material/KeyOutlined";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import SchemaOutlinedIcon from "@mui/icons-material/SchemaOutlined";
+import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
+import BuildOutlinedIcon from "@mui/icons-material/BuildOutlined";
+import ExtensionOutlinedIcon from "@mui/icons-material/ExtensionOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
 import { alpha } from "@mui/material/styles";
 import { useConfigStore } from "../../state/useConfigStore";
 import { encodeCollectionPath } from "../../utils/routes";
 import { NavItem } from "../../../schemas/config.schema";
 import { useAuthStore } from "../../state/useAuthStore";
+import { ElementType } from "react";
+
+const NAV_ICON_MAP: Record<string, ElementType> = {
+  HomeOutlined: HomeOutlinedIcon,
+  FolderOutlined: FolderOutlinedIcon,
+  DashboardOutlined: DashboardOutlinedIcon,
+  TableRowsOutlined: TableRowsOutlinedIcon,
+  DescriptionOutlined: DescriptionOutlinedIcon,
+  SchemaOutlined: SchemaOutlinedIcon,
+  StorageOutlined: StorageOutlinedIcon,
+  PeopleOutlined: PeopleOutlinedIcon,
+  KeyOutlined: KeyOutlinedIcon,
+  PublicOutlined: PublicOutlinedIcon,
+  BuildOutlined: BuildOutlinedIcon,
+  ExtensionOutlined: ExtensionOutlinedIcon,
+  SettingsOutlined: SettingsOutlinedIcon,
+  HelpOutlineOutlined: HelpOutlineOutlinedIcon,
+  FeedbackOutlined: FeedbackOutlinedIcon,
+};
 
 function VerticalEllipsisIcon() {
   return (
@@ -47,7 +76,8 @@ export function SideNav() {
   const { user } = useAuthStore();
 
   const navItems = useMemo(() => config?.navigation ?? [], [config]);
-  const appName = config?.name ?? "OpenAPI Admin Console";
+  const appName = config?.title ?? config?.name ?? "OpenAPI Admin Console";
+  const appSubTitle = config?.sub_title ?? "Admin Dashboard";
   const userName = user?.name ?? "Admin User";
   const userEmail = "admin@example.com";
   const userInitials = useMemo(
@@ -74,6 +104,7 @@ export function SideNav() {
   const renderItems = (items: NavItem[], depth = 0) =>
     items.map((item) => {
       const key = `${item.label}-${item.path ?? depth}`;
+      const ItemIcon = resolveNavIcon(item, depth);
       if (item.children && item.children.length > 0) {
         const open = openMap[key] ?? true;
         return (
@@ -82,14 +113,15 @@ export function SideNav() {
               onClick={() => toggle(key)}
               sx={{
                 pl: 2 + depth * 2,
-                borderRadius: 2,
-                mb: 0.5,
+                borderRadius: 1,
+                minHeight: 36,
+                py: 0.5,
               }}
             >
               <ListItemIcon sx={{ minWidth: 32 }}>
-                <FolderOutlinedIcon fontSize="small" />
+                <ItemIcon fontSize="small" />
               </ListItemIcon>
-              <ListItemText primary={item.label} />
+              <ListItemText primary={item.label} primaryTypographyProps={{ variant: "body2" }} />
               {open ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
             </ListItemButton>
             <Collapse in={open} timeout="auto" unmountOnExit>
@@ -110,74 +142,75 @@ export function SideNav() {
           selected={isActive(path)}
           sx={{
             pl: 2 + depth * 2,
-            borderRadius: 2,
-            mb: 0.5,
+            borderRadius: 1,
+            minHeight: 36,
+            py: 0.5,
             "&.Mui-selected": {
               bgcolor: "action.selected",
             },
           }}
         >
           <ListItemIcon sx={{ minWidth: 32 }}>
-            {depth === 0 ? <HomeOutlinedIcon fontSize="small" /> : <FolderOutlinedIcon fontSize="small" />}
+            <ItemIcon fontSize="small" />
           </ListItemIcon>
-          <ListItemText primary={item.label} />
+          <ListItemText primary={item.label} primaryTypographyProps={{ variant: "body2" }} />
         </ListItemButton>
       );
     });
 
   return (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", px: 1.5, py: 2 }}>
+    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", px: 2, py: 2 }}>
       <Box
         sx={{
-          px: 1.5,
-          py: 1.25,
+          px: 2,
+          py: 1.5,
           border: (theme) => `1px solid ${theme.palette.divider}`,
-          borderRadius: 2.5,
+          borderRadius: 2,
           bgcolor: "background.paper",
           mb: 2,
         }}
       >
-        <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
+        <Typography variant="subtitle1">
           {appName}
         </Typography>
-        <Typography variant="caption" color="text.secondary">
-          Web app
+        <Typography variant="body2" color="text.secondary">
+          {appSubTitle}
         </Typography>
       </Box>
 
-      <Typography variant="caption" color="text.secondary" sx={{ px: 1, mb: 1, fontWeight: 700 }}>
+      <Typography variant="overline" color="text.secondary" sx={{ px: 1, mb: 1 }}>
         RESOURCES
       </Typography>
       <List component="nav" sx={{ pt: 0 }}>
-        {navItems.length === 0 ? <ListItemButton disabled sx={{ borderRadius: 2 }}><ListItemText primary="No navigation configured" /></ListItemButton> : renderItems(navItems)}
+        {navItems.length === 0 ? <ListItemButton disabled sx={{ borderRadius: 1, minHeight: 36, py: 0.5 }}><ListItemText primary="No navigation configured" primaryTypographyProps={{ variant: "body2" }} /></ListItemButton> : renderItems(navItems)}
       </List>
 
       <Box sx={{ mt: "auto", pt: 1 }}>
         <List component="nav" sx={{ pt: 0 }}>
-          <ListItemButton sx={{ borderRadius: 2 }}>
+          <ListItemButton sx={{ borderRadius: 1, minHeight: 36, py: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 32 }}>
               <SettingsOutlinedIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="Settings" />
+            <ListItemText primary="Settings" primaryTypographyProps={{ variant: "body2" }} />
           </ListItemButton>
-          <ListItemButton sx={{ borderRadius: 2 }}>
+          <ListItemButton sx={{ borderRadius: 1, minHeight: 36, py: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 32 }}>
               <HelpOutlineOutlinedIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="About" />
+            <ListItemText primary="About" primaryTypographyProps={{ variant: "body2" }} />
           </ListItemButton>
-          <ListItemButton sx={{ borderRadius: 2 }}>
+          <ListItemButton sx={{ borderRadius: 1, minHeight: 36, py: 0.5 }}>
             <ListItemIcon sx={{ minWidth: 32 }}>
               <FeedbackOutlinedIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="Feedback" />
+            <ListItemText primary="Feedback" primaryTypographyProps={{ variant: "body2" }} />
           </ListItemButton>
         </List>
         <Box
           sx={{
             mt: 1.5,
             p: 1.5,
-            borderRadius: 2.5,
+            borderRadius: 2,
             bgcolor: "background.paper",
             border: (theme) => `1px solid ${theme.palette.divider}`,
           }}
@@ -195,7 +228,7 @@ export function SideNav() {
               {userInitials}
             </Avatar>
             <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.1 }} noWrap>
+              <Typography variant="body2" noWrap>
                 {userName}
               </Typography>
               <Typography variant="caption" color="text.secondary" noWrap>
@@ -216,6 +249,7 @@ export function SideNav() {
         anchorEl={userMenuAnchor}
         open={Boolean(userMenuAnchor)}
         onClose={() => setUserMenuAnchor(null)}
+        MenuListProps={{ dense: true }}
         PaperProps={{
           sx: {
             width: 240,
@@ -229,24 +263,25 @@ export function SideNav() {
         <MenuItem
           onClick={() => setUserMenuAnchor(null)}
           sx={{
-            border: (theme) => `2px solid ${theme.palette.primary.light}`,
-            borderRadius: 3,
-            mb: 0.5,
+            borderRadius: 2,
+            minHeight: 34,
+            py: 0.5,
           }}
         >
           Profile
         </MenuItem>
-        <MenuItem onClick={() => setUserMenuAnchor(null)}>My account</MenuItem>
-        <Divider sx={{ my: 1 }} />
-        <MenuItem onClick={() => setUserMenuAnchor(null)}>Add another account</MenuItem>
-        <MenuItem onClick={() => setUserMenuAnchor(null)}>Settings</MenuItem>
-        <Divider sx={{ my: 1 }} />
+        <MenuItem onClick={() => setUserMenuAnchor(null)} sx={{ minHeight: 34, py: 0.5 }}>My account</MenuItem>
+        <Divider sx={{ my: 0.5 }} />
+        <MenuItem onClick={() => setUserMenuAnchor(null)} sx={{ minHeight: 34, py: 0.5 }}>Add another account</MenuItem>
+        <MenuItem onClick={() => setUserMenuAnchor(null)} sx={{ minHeight: 34, py: 0.5 }}>Settings</MenuItem>
+        <Divider sx={{ my: 0.5 }} />
         <MenuItem
           onClick={() => setUserMenuAnchor(null)}
           sx={{
             borderRadius: 2,
-            bgcolor: "action.hover",
             mt: 0.25,
+            minHeight: 34,
+            py: 0.5,
             display: "flex",
             justifyContent: "space-between",
           }}
@@ -257,4 +292,12 @@ export function SideNav() {
       </Menu>
     </Box>
   );
+}
+
+function resolveNavIcon(item: NavItem, depth: number): ElementType {
+  if (item.icon) {
+    const configuredIcon = NAV_ICON_MAP[item.icon];
+    if (configuredIcon) return configuredIcon;
+  }
+  return depth === 0 ? TableRowsOutlinedIcon : FolderOutlinedIcon;
 }

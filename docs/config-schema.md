@@ -4,8 +4,12 @@ This document defines the configuration file used to drive navigation, list rend
 
 ## Top-level fields
 
-- `name` (string, optional)
-  - Application name shown in the header.
+- `title` (string, optional)
+  - Application title shown in the top-left sidebar card.
+- `sub_title` (string, optional)
+  - Subtitle shown under the title in the top-left sidebar card.
+- `name` (string, optional, legacy)
+  - Backward-compatible alias for title.
 - `oas_source` (string, required)
   - Local file path or URL to the OpenAPI document.
 - `api_base_url` (string, optional)
@@ -21,6 +25,9 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 
 - `label` (string, required): Menu label.
 - `path` (string, optional): OAS collection path (must support GET).
+- `icon` (string, optional): Generic MUI icon name for the nav item.
+  - This is optional and not tied to any specific menu label.
+  - Supported keys: `HomeOutlined`, `FolderOutlined`, `DashboardOutlined`, `TableRowsOutlined`, `DescriptionOutlined`, `SchemaOutlined`, `StorageOutlined`, `PeopleOutlined`, `KeyOutlined`, `PublicOutlined`, `BuildOutlined`, `ExtensionOutlined`, `SettingsOutlined`, `HelpOutlineOutlined`, `FeedbackOutlined`.
 - `children` (array, optional): Nested navigation items.
 - `display_fields` (array of strings, optional): Table columns for collection view.
   - Use `"*"` to include all remaining fields not explicitly listed.

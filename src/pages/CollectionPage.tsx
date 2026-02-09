@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   Chip,
+  Fab,
   IconButton,
   Menu,
   MenuItem,
@@ -12,12 +13,12 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField,
   Typography,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
 import {
   DataGrid,
   GridColDef,
@@ -65,7 +66,6 @@ export function CollectionPage() {
   const resourcePath = resolvedPath ? registry?.resourceByCollection[resolvedPath] : undefined;
   const resourceEntry = resourcePath ? registry?.resources[resourcePath] : undefined;
   const baseUrl = resolveBaseUrl(config, oas);
-  const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -79,12 +79,12 @@ export function CollectionPage() {
     () =>
       buildQueryParams({
         searchParam,
-        searchValue: search,
+        searchValue: "",
         pagination,
         page,
         rowsPerPage,
       }),
-    [searchParam, search, pagination, page, rowsPerPage]
+    [searchParam, pagination, page, rowsPerPage]
   );
 
   const { data, isLoading, error } = useQuery<CollectionResult>({
@@ -192,25 +192,16 @@ export function CollectionPage() {
           {label}
         </Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {searchParam && (
-            <TextField
-              size="small"
-              placeholder="Search"
-              value={search}
-              onChange={(event) => {
-                setSearch(event.target.value);
-                setPage(0);
-              }}
-            />
-          )}
-          <Button
-            variant="contained"
+          <Fab
+            color="primary"
+            aria-label="add"
+            size="small"
             component={RouterLink}
             disabled={!hasCreate}
             to={resolvedPath ? `/${collectionPath}/new` : "/"}
           >
-            + Create
-          </Button>
+            <AddIcon />
+          </Fab>
         </Box>
       </Box>
       <Card variant="outlined">

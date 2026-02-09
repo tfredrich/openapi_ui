@@ -1,0 +1,36 @@
+{
+  "oas_source": "/openapi.json",
+  "api_base_url": "http://localhost:8086",
+  "security_config": {
+    "type": "oauth2",
+    "client_id": "G1aKb65RSzW3kkSfhBwAzg",
+    "as_base_url": "http://localhost:8080/NvMA_UiyRsqTqWFlTxzEWQ",
+    "scopes": ["openid", "profile", "offline_access", "admin:read", "admin:write"],
+    "dev_bypass": {
+      "access_token": "PASTE_DEV_TOKEN_HERE",
+      "token_type": "Bearer"
+    }
+  },
+  "navigation": [
+    {
+      "label": "Prompts",
+      "path": "/prompts",
+      "display_fields": ["name", "description"]
+    },
+    {
+      "label": "Schemas",
+      "path": "/schemas",
+      "display_fields": ["name", "type"]
+    },
+    {
+      "label": "Custom Domains",
+      "path": "/domains",
+      "display_fields": ["name"]
+    },
+    {
+      "label": "API Keys",
+      "path": "/apikeys",
+      "display_fields": ["name"]
+    }
+  ]
+}

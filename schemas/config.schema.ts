@@ -1,5 +1,23 @@
 import { z } from "zod";
 
+const NavIconNameSchema = z.enum([
+  "HomeOutlined",
+  "FolderOutlined",
+  "DashboardOutlined",
+  "TableRowsOutlined",
+  "DescriptionOutlined",
+  "SchemaOutlined",
+  "StorageOutlined",
+  "PeopleOutlined",
+  "KeyOutlined",
+  "PublicOutlined",
+  "BuildOutlined",
+  "ExtensionOutlined",
+  "SettingsOutlined",
+  "HelpOutlineOutlined",
+  "FeedbackOutlined",
+]);
+
 export const SecurityConfigSchema = z
   .object({
     type: z.enum(["oauth2", "bearer", "none"]),
@@ -65,6 +83,7 @@ const NavItemSchema: z.ZodType<any> = z.lazy(() =>
     .object({
       label: z.string().min(1),
       path: z.string().min(1).optional(),
+      icon: NavIconNameSchema.optional(),
       display_fields: z.array(z.string().min(1)).optional(),
       children: z.array(NavItemSchema).optional(),
       list_overrides: FieldOverridesSchema.optional(),
@@ -91,6 +110,8 @@ const NavItemSchema: z.ZodType<any> = z.lazy(() =>
 
 export const ConsoleConfigSchema = z
   .object({
+    title: z.string().min(1).optional(),
+    sub_title: z.string().min(1).optional(),
     name: z.string().min(1).optional(),
     oas_source: z.string().min(1),
     api_base_url: z.string().url().optional(),
