@@ -48,6 +48,9 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 - `as_base_url`: required (Authorization Server base URL; discovery at `/.well-known/openid-configuration`)
 - `client_secret`: optional
 - `scopes`, `audience`: optional
+- `dev_bypass` (object, optional, development-only)
+  - `access_token`: token used only when `VITE_DEV_AUTH_BYPASS=true`
+  - `token_type`: optional, defaults to `Bearer`
 
 ### Bearer/JWT
 - `type`: `"bearer"`
@@ -60,6 +63,7 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 - A navigation item must have either `path` or `children` (not both).
 - `display_fields` entries must be non-empty strings.
 - If `security_config.type` is `oauth2`, `client_id` and `as_base_url` are required.
+- `security_config.dev_bypass` is rejected outside development builds.
 
 ## Examples
 

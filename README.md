@@ -64,6 +64,34 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
 
 The app uses `oidc-client-ts` for Authorization Code + PKCE and refresh tokens. Tokens are mirrored into cookies for API calls.
 
+### Development-only auth bypass
+
+To test navigation before sign-in is configured, set this in `.env.development`:
+
+```bash
+VITE_DEV_AUTH_BYPASS=true
+```
+
+When enabled in development, OAuth sign-in is skipped and a header badge shows `Auth bypass active`.
+API requests are blocked unless `security_config.dev_bypass.access_token` is present.
+
+Add an optional token in `public/config.json` (or yaml):
+
+```json
+{
+  "security_config": {
+    "type": "oauth2",
+    "dev_bypass": {
+      "access_token": "PASTE_DEV_TOKEN_HERE",
+      "token_type": "Bearer"
+    }
+  }
+}
+```
+
+If the token already includes a scheme prefix (for example `Bearer ...`), it is used as-is.
+The app throws an error if this flag is enabled outside development.
+
 ## Authorization server setup
 
 Configure your OAuth2/OIDC provider with the following:

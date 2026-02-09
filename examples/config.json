@@ -6,7 +6,11 @@
     "type": "oauth2",
     "client_id": "admin-console-client",
     "as_base_url": "https://auth.example.com",
-    "scopes": ["admin:read", "admin:write"]
+    "scopes": ["admin:read", "admin:write"],
+    "dev_bypass": {
+      "access_token": "PASTE_DEV_TOKEN_HERE",
+      "token_type": "Bearer"
+    }
   },
   "navigation": [
     {

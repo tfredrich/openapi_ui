@@ -8,6 +8,13 @@ export const SecurityConfigSchema = z
     as_base_url: z.string().url().optional(),
     scopes: z.array(z.string().min(1)).optional(),
     audience: z.string().min(1).optional(),
+    dev_bypass: z
+      .object({
+        access_token: z.string().min(1),
+        token_type: z.string().min(1).optional(),
+      })
+      .strict()
+      .optional(),
   })
   .superRefine((value, ctx) => {
     if (value.type === "oauth2") {

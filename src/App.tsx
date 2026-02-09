@@ -10,6 +10,7 @@ import { useConfigStore } from "./state/useConfigStore";
 import { useOasStore } from "./state/useOasStore";
 import { useRegistryStore } from "./state/useRegistryStore";
 import { ensureAuthenticated, setOAuthConfig } from "./services/oauth";
+import { assertDevBypassConfigAllowed } from "./services/devAuthBypass";
 
 export function App() {
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ export function App() {
     const init = async () => {
       try {
         const config = await loadConfig("/config.json");
+        assertDevBypassConfigAllowed(config.security_config);
         if (!active) return;
         setConfig(config);
 

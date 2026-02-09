@@ -1,7 +1,7 @@
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client-ts";
 import { SecurityConfig } from "../../schemas/config.schema";
 import { useAuthStore } from "../state/useAuthStore";
-import { json } from "zod/v4";
+import { isDevAuthBypassEnabled } from "./devAuthBypass";
 
 const ACCESS_TOKEN_COOKIE = "oidc_access_token";
 const REFRESH_TOKEN_COOKIE = "oidc_refresh_token";
@@ -127,6 +127,9 @@ export function setOAuthConfig(config?: SecurityConfig) {
 }
 
 export function isOAuthEnabled() {
+  if (isDevAuthBypassEnabled()) {
+    return false;
+  }
   return oauthConfig?.type === "oauth2";
 }
 
@@ -191,6 +194,9 @@ async function refreshWithUserManager() {
 }
 
 export async function getAuthorizationHeader() {
+  if (isDevAuthBypassEnabled()) {
+    return null;
+  }
   const cookieToken = getTokenFromCookies();
   if (cookieToken) {
     return `${cookieToken.tokenType} ${cookieToken.accessToken}`;

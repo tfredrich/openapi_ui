@@ -8,8 +8,20 @@ export type RequestOptions = {
 };
 
 import { getAuthorizationHeader, isOAuthEnabled, startOAuthLogin } from "./oauth";
+import { getDevBypassAuthorizationHeader, isDevAuthBypassEnabled } from "./devAuthBypass";
+import { useConfigStore } from "../state/useConfigStore";
 
 export async function apiRequest<T = unknown>(options: RequestOptions): Promise<T> {
+  const securityConfig = useConfigStore.getState().config?.security_config;
+  const devBypassHeader = getDevBypassAuthorizationHeader(securityConfig);
+  if (isDevAuthBypassEnabled()) {
+    if (!devBypassHeader) {
+      throw new Error(
+        "API requests are disabled while VITE_DEV_AUTH_BYPASS is enabled unless security_config.dev_bypass.access_token is set"
+      );
+    }
+  }
+
   const { baseUrl, path, method = "GET", headers, query, body } = options;
   const url = new URL(path, baseUrl);
 
@@ -21,8 +33,8 @@ export async function apiRequest<T = unknown>(options: RequestOptions): Promise<
     });
   }
 
-  let authHeader: string | undefined;
-  if (isOAuthEnabled()) {
+  let authHeader: string | undefined = devBypassHeader ?? undefined;
+  if (!authHeader && isOAuthEnabled()) {
     const header = await getAuthorizationHeader();
     if (!header) {
       await startOAuthLogin();

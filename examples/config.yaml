@@ -8,6 +8,9 @@ security_config:
   scopes:
     - admin:read
     - admin:write
+  dev_bypass:
+    access_token: PASTE_DEV_TOKEN_HERE
+    token_type: Bearer
 navigation:
   - label: Resources
     path: /v1/resources

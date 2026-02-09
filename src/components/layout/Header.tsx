@@ -1,7 +1,8 @@
-import { AppBar, Avatar, Box, Button, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
+import { AppBar, Avatar, Box, Button, Chip, Menu, MenuItem, Toolbar, Typography } from "@mui/material";
 import { useState } from "react";
 import { useConfigStore } from "../../state/useConfigStore";
 import { useAuthStore } from "../../state/useAuthStore";
+import { isDevAuthBypassEnabled } from "../../services/devAuthBypass";
 
 type HeaderProps = {
   drawerWidth: number;
@@ -16,6 +17,7 @@ export function Header({ drawerWidth }: HeaderProps) {
     user?.avatarUrl ??
     "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%25' height='100%25' fill='%23d7e4df'/><circle cx='32' cy='24' r='12' fill='%2385a59a'/><rect x='14' y='40' width='36' height='16' rx='8' fill='%2385a59a'/></svg>";
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const isBypassEnabled = isDevAuthBypassEnabled();
 
   return (
     <AppBar
@@ -43,7 +45,16 @@ export function Header({ drawerWidth }: HeaderProps) {
             {title}
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {isBypassEnabled ? (
+            <Chip
+              label="Auth bypass active"
+              size="small"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+          ) : null}
           <Button
             variant="outlined"
             color="primary"
