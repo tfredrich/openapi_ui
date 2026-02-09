@@ -78,30 +78,47 @@ const FormOverridesSchema = z
   })
   .strict();
 
+const CollectionConfigSchema = z
+  .object({
+    path: z.string().min(1),
+    display_fields: z.array(z.string().min(1)).optional(),
+    list_overrides: FieldOverridesSchema.optional(),
+    form_overrides: FormOverridesSchema.optional(),
+  })
+  .strict();
+
+const ItemConfigSchema = z
+  .object({
+    label: z.string().min(1).optional(),
+    path: z.string().min(1),
+  })
+  .strict();
+
 const NavItemSchema: z.ZodType<any> = z.lazy(() =>
   z
     .object({
       label: z.string().min(1),
-      path: z.string().min(1).optional(),
+      collection: CollectionConfigSchema.optional(),
+      item: ItemConfigSchema.optional(),
       icon: NavIconNameSchema.optional(),
-      display_fields: z.array(z.string().min(1)).optional(),
       children: z.array(NavItemSchema).optional(),
-      list_overrides: FieldOverridesSchema.optional(),
-      form_overrides: FormOverridesSchema.optional(),
     })
     .strict()
     .superRefine((value, ctx) => {
-      if (!value.path && (!value.children || value.children.length === 0)) {
+      const hasStructuredCollection = Boolean(value.collection?.path);
+      const hasChildren = Boolean(value.children && value.children.length > 0);
+
+      if (!hasStructuredCollection && !hasChildren) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "nav item must include a path or children",
-          path: ["path"],
+          message: "nav item must include collection.path or children",
+          path: ["collection", "path"],
         });
       }
-      if (value.path && value.children && value.children.length > 0) {
+      if (hasStructuredCollection && hasChildren) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "nav item cannot include both path and children",
+          message: "nav item cannot include both collection and children",
           path: ["children"],
         });
       }

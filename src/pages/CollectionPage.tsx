@@ -33,6 +33,7 @@ import { resolveBaseUrl } from "../services/baseUrl";
 import { apiRequest } from "../services/apiClient";
 import { applyDisplayFields, applyListOverrides, extractPropertyKeys, formatCellValue, getSchemaPropertyTitle } from "../utils/schema";
 import { useMemo, useState } from "react";
+import { getNavCollectionPath, getNavDisplayFields, getNavListOverrides } from "../utils/navigation";
 
 type CollectionRow = Record<string, unknown>;
 type CollectionResult =
@@ -53,7 +54,7 @@ export function CollectionPage() {
   const { oas } = useOasStore();
   const findLabel = (items: NavItem[]): string | undefined => {
     for (const item of items) {
-      if (item.path === resolvedPath) return item.label;
+      if (getNavCollectionPath(item) === resolvedPath) return item.label;
       if (item.children) {
         const nested = findLabel(item.children);
         if (nested) return nested;
@@ -354,7 +355,7 @@ export function CollectionPage() {
 function findDisplayFields(items: NavItem[], path: string | null): string[] | undefined {
   if (!path) return undefined;
   for (const item of items) {
-    if (item.path === path) return item.display_fields;
+    if (getNavCollectionPath(item) === path) return getNavDisplayFields(item);
     if (item.children) {
       const nested = findDisplayFields(item.children, path);
       if (nested) return nested;
@@ -369,7 +370,7 @@ function findListOverrides(
 ): { hidden?: string[]; labels?: Record<string, string>; order?: string[] } | undefined {
   if (!path) return undefined;
   for (const item of items) {
-    if (item.path === path) return item.list_overrides;
+    if (getNavCollectionPath(item) === path) return getNavListOverrides(item);
     if (item.children) {
       const nested = findListOverrides(item.children, path);
       if (nested) return nested;

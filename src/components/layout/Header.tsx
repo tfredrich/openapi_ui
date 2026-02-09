@@ -32,6 +32,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { useLocation } from "react-router-dom";
 import { NavItem } from "../../../schemas/config.schema";
 import { encodeCollectionPath } from "../../utils/routes";
+import { getNavCollectionPath } from "../../utils/navigation";
 
 type HeaderProps = {
   drawerWidth: number;
@@ -200,8 +201,9 @@ export function Header({ drawerWidth }: HeaderProps) {
 
 function findSelectedNavLabel(items: NavItem[], pathname: string): string | undefined {
   for (const item of items) {
-    if (item.path) {
-      const target = `/${encodeCollectionPath(item.path)}`;
+    const path = getNavCollectionPath(item);
+    if (path) {
+      const target = `/${encodeCollectionPath(path)}`;
       if (pathname.startsWith(target)) {
         return item.label;
       }

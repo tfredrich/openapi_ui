@@ -21,18 +21,21 @@ This document defines the configuration file used to drive navigation, list rend
 
 ## Navigation items
 
-Each navigation node supports either a `path` (leaf item) or `children` (group item).
+Each navigation node supports either a `collection` object (leaf item) or `children` (group item).
 
 - `label` (string, required): Menu label.
-- `path` (string, optional): OAS collection path (must support GET).
+- `collection` (object, optional): Collection-level config for list/create behavior.
+  - `path` (string, required when `collection` exists): OAS collection path (must support GET).
+  - `display_fields` (array of strings, optional): Table columns for collection view.
+  - `list_overrides` (object, optional): Column overrides for list/detail view.
+  - `form_overrides` (object, optional): Field overrides and layout for forms.
+- `item` (object, optional): Element-level metadata.
+  - `label` (string, optional): Singular resource label.
+  - `path` (string, required when `item` exists): Element path template (example: `/users/{id}`).
 - `icon` (string, optional): Generic MUI icon name for the nav item.
   - This is optional and not tied to any specific menu label.
   - Supported keys: `HomeOutlined`, `FolderOutlined`, `DashboardOutlined`, `TableRowsOutlined`, `DescriptionOutlined`, `SchemaOutlined`, `StorageOutlined`, `PeopleOutlined`, `KeyOutlined`, `PublicOutlined`, `BuildOutlined`, `ExtensionOutlined`, `SettingsOutlined`, `HelpOutlineOutlined`, `FeedbackOutlined`.
 - `children` (array, optional): Nested navigation items.
-- `display_fields` (array of strings, optional): Table columns for collection view.
-  - Use `"*"` to include all remaining fields not explicitly listed.
-- `list_overrides` (object, optional): Column overrides for list view.
-- `form_overrides` (object, optional): Field overrides and layout for forms.
 
 ## Overrides
 
@@ -67,7 +70,7 @@ Each navigation node supports either a `path` (leaf item) or `children` (group i
 
 ## Validation rules
 
-- A navigation item must have either `path` or `children` (not both).
+- A navigation item must have either `collection.path` or `children` (not both).
 - `display_fields` entries must be non-empty strings.
 - If `security_config.type` is `oauth2`, `client_id` and `as_base_url` are required.
 - `security_config.dev_bypass` is rejected outside development builds.

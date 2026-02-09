@@ -25,6 +25,7 @@ import { apiRequest } from "../services/apiClient";
 import { applyListOverrides, extractPropertyKeys, formatCellValue, getSchemaPropertyTitle } from "../utils/schema";
 import { NavItem } from "../../schemas/config.schema";
 import { buildResourcePath, decodeCollectionPath } from "../utils/routes";
+import { getNavCollectionPath, getNavFormOverrides, getNavListOverrides } from "../utils/navigation";
 
 export function DetailPage() {
   const { collectionPath, id } = useParams();
@@ -172,10 +173,10 @@ function findDetailOverrides(
 ): { hidden?: string[]; labels?: Record<string, string>; order?: string[] } | undefined {
   if (!path) return undefined;
   for (const item of items) {
-    if (item.path === path) {
+    if (getNavCollectionPath(item) === path) {
       return (
-        item.form_overrides?.field_overrides ??
-        item.list_overrides
+        getNavFormOverrides(item)?.field_overrides ??
+        getNavListOverrides(item)
       );
     }
     if (item.children) {

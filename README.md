@@ -48,8 +48,14 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
   "navigation": [
     {
       "label": "Prompts",
-      "path": "/prompts",
-      "display_fields": ["name", "description"]
+      "collection": {
+        "path": "/prompts",
+        "display_fields": ["name", "description"]
+      },
+      "item": {
+        "label": "Prompt",
+        "path": "/prompts/{id}"
+      }
     }
   ]
 }

@@ -36,6 +36,7 @@ import TableRowsOutlinedIcon from "@mui/icons-material/TableRowsOutlined";
 import { alpha } from "@mui/material/styles";
 import { useConfigStore } from "../../state/useConfigStore";
 import { encodeCollectionPath } from "../../utils/routes";
+import { getNavCollectionPath } from "../../utils/navigation";
 import { NavItem } from "../../../schemas/config.schema";
 import { useAuthStore } from "../../state/useAuthStore";
 import { ElementType } from "react";
@@ -103,7 +104,8 @@ export function SideNav() {
 
   const renderItems = (items: NavItem[], depth = 0) =>
     items.map((item) => {
-      const key = `${item.label}-${item.path ?? depth}`;
+      const path = getNavCollectionPath(item);
+      const key = `${item.label}-${path ?? depth}`;
       const ItemIcon = resolveNavIcon(item, depth);
       if (item.children && item.children.length > 0) {
         const open = openMap[key] ?? true;
@@ -133,13 +135,13 @@ export function SideNav() {
         );
       }
 
-      const path = item.path ?? "";
+      const resolvedPath = path ?? "";
       return (
         <ListItemButton
           key={key}
           component={RouterLink}
-          to={`/${encodeCollectionPath(path)}`}
-          selected={isActive(path)}
+          to={`/${encodeCollectionPath(resolvedPath)}`}
+          selected={isActive(resolvedPath)}
           sx={{
             pl: 2 + depth * 2,
             borderRadius: 1,

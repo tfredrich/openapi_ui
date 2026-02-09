@@ -1,4 +1,6 @@
 {
+  "title": "Agenteux.com",
+  "sub_title": "Admin Console",
   "oas_source": "/openapi.json",
   "api_base_url": "http://localhost:8086",
   "security_config": {
@@ -14,23 +16,51 @@
   "navigation": [
     {
       "label": "Prompts",
-      "path": "/prompts",
-      "display_fields": ["name", "description"]
+      "icon": "DescriptionOutlined",
+      "collection": {
+        "path": "/prompts",
+        "display_fields": ["name", "description"]
+      },
+      "item": {
+        "label": "Prompt",
+        "path": "/prompts/{id}"
+      }
     },
     {
       "label": "Schemas",
-      "path": "/schemas",
-      "display_fields": ["name", "type"]
+      "icon": "SchemaOutlined",
+      "collection": {
+        "path": "/schemas",
+        "display_fields": ["name", "type"]
+      },
+      "item": {
+        "label": "Schema",
+        "path": "/schemas/{id}"
+      }
     },
     {
       "label": "Custom Domains",
-      "path": "/domains",
-      "display_fields": ["name"]
+      "icon": "PublicOutlined",
+      "collection": {
+        "path": "/domains",
+        "display_fields": ["name"]
+      },
+      "item": {
+        "label": "Domain",
+        "path": "/domains/{id}"
+      }
     },
     {
       "label": "API Keys",
-      "path": "/apikeys",
-      "display_fields": ["name"]
+      "icon": "KeyOutlined",
+      "collection": {
+        "path": "/apikeys",
+        "display_fields": ["name"]
+      },
+      "item": {
+        "label": "API Key",
+        "path": "/apikeys/{id}"
+      }
     }
   ]
 }
