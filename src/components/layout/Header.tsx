@@ -3,20 +3,14 @@ import {
   AppBar,
   Box,
   Breadcrumbs,
-  Button,
   Chip,
   IconButton,
-  InputAdornment,
   Menu,
   MenuItem,
-  OutlinedInput,
-  Popover,
   Toolbar,
   Typography,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import SearchIcon from "@mui/icons-material/Search";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
@@ -25,10 +19,6 @@ import { alpha } from "@mui/material/styles";
 import { useConfigStore } from "../../state/useConfigStore";
 import { isDevAuthBypassEnabled } from "../../services/devAuthBypass";
 import { ThemePreference, useColorMode } from "../../providers/AppProviders";
-import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import dayjs, { Dayjs } from "dayjs";
 import { useLocation } from "react-router-dom";
 import { NavItem } from "../../../schemas/config.schema";
 import { encodeCollectionPath } from "../../utils/routes";
@@ -46,13 +36,7 @@ export function Header({ drawerWidth }: HeaderProps) {
     () => findSelectedNavLabel(config?.navigation ?? [], location.pathname) ?? "Home",
     [config?.navigation, location.pathname]
   );
-  const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
-  const nowDate = useMemo(
-    () => selectedDate.format("MMM D, YYYY"),
-    [selectedDate]
-  );
   const isBypassEnabled = isDevAuthBypassEnabled();
-  const [dateAnchorEl, setDateAnchorEl] = useState<null | HTMLElement>(null);
   const [themeMenuAnchor, setThemeMenuAnchor] = useState<null | HTMLElement>(null);
 
   const themeIcon = resolvedMode === "dark" ? <DarkModeOutlinedIcon fontSize="small" /> : <LightModeOutlinedIcon fontSize="small" />;
@@ -120,53 +104,6 @@ export function Header({ drawerWidth }: HeaderProps) {
               sx={{ fontWeight: 600 }}
             />
           ) : null}
-          <OutlinedInput
-            size="small"
-            placeholder="Search..."
-            sx={{
-              width: 220,
-              bgcolor: "action.hover",
-            }}
-            startAdornment={
-              <InputAdornment position="start">
-                <SearchIcon fontSize="small" />
-              </InputAdornment>
-            }
-          />
-          <Button
-            variant="outlined"
-            color="inherit"
-            startIcon={<CalendarMonthOutlinedIcon />}
-            sx={{ textTransform: "none" }}
-            onClick={(event) => setDateAnchorEl(event.currentTarget)}
-          >
-            {nowDate}
-          </Button>
-          <Popover
-            open={Boolean(dateAnchorEl)}
-            anchorEl={dateAnchorEl}
-            onClose={() => setDateAnchorEl(null)}
-            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            transformOrigin={{ vertical: "top", horizontal: "right" }}
-            PaperProps={{
-              sx: {
-                mt: 1,
-                border: (theme) => `1px solid ${theme.palette.divider}`,
-                boxShadow: (theme) => theme.shadows[8],
-              },
-            }}
-          >
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DateCalendar
-                value={selectedDate}
-                onChange={(value) => {
-                  if (!value) return;
-                  setSelectedDate(value);
-                  setDateAnchorEl(null);
-                }}
-              />
-            </LocalizationProvider>
-          </Popover>
           <IconButton color="inherit">
             <NotificationsNoneOutlinedIcon fontSize="small" />
           </IconButton>

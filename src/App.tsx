@@ -60,6 +60,12 @@ export function App() {
   }, [config]);
 
   useEffect(() => {
+    const appTitle = config?.title ?? config?.name ?? "OpenAPI Admin Console";
+    const appSubtitle = config?.sub_title;
+    document.title = appSubtitle ? `${appTitle} : ${appSubtitle}` : appTitle;
+  }, [config]);
+
+  useEffect(() => {
     if (loading || error) return;
     const oauthEnabled = config?.security_config?.type === "oauth2";
     if (!oauthEnabled) {

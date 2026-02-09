@@ -180,9 +180,6 @@ export function SideNav() {
         </Typography>
       </Box>
 
-      <Typography variant="overline" color="text.secondary" sx={{ px: 1, mb: 1 }}>
-        RESOURCES
-      </Typography>
       <List component="nav" sx={{ pt: 0 }}>
         {navItems.length === 0 ? <ListItemButton disabled sx={{ borderRadius: 1, minHeight: 36, py: 0.5 }}><ListItemText primary="No navigation configured" primaryTypographyProps={{ variant: "body2" }} /></ListItemButton> : renderItems(navItems)}
       </List>
