@@ -35,7 +35,8 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
 
 ```json
 {
-  "name": "OpenAPI Admin Console",
+  "title": "OpenAPI Admin Console",
+  "sub_title": "Admin Dashboard",
   "oas_source": "/openapi.json",
   "api_base_url": "http://localhost:8086",
   "security_config": {
@@ -47,8 +48,14 @@ The app loads configuration from `/public/config.json` by default (or `/public/c
   "navigation": [
     {
       "label": "Prompts",
-      "path": "/prompts",
-      "display_fields": ["name", "description"]
+      "collection": {
+        "path": "/prompts",
+        "display_fields": ["name", "description"]
+      },
+      "item": {
+        "label": "Prompt",
+        "path": "/prompts/{id}"
+      }
     }
   ]
 }

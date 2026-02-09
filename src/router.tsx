@@ -9,10 +9,12 @@ import { OAuthSilentCallbackPage } from "./pages/OAuthSilentCallbackPage";
 import { useConfigStore } from "./state/useConfigStore";
 import { NavItem } from "../schemas/config.schema";
 import { encodeCollectionPath } from "./utils/routes";
+import { getNavCollectionPath } from "./utils/navigation";
 
 function findFirstPath(items: NavItem[]): string | null {
   for (const item of items) {
-    if (item.path) return item.path;
+    const path = getNavCollectionPath(item);
+    if (path) return path;
     if (item.children) {
       const nested = findFirstPath(item.children);
       if (nested) return nested;

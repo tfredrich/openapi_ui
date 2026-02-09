@@ -1,4 +1,5 @@
-name: OpenAPI Admin Console
+title: OpenAPI Admin Console
+sub_title: Admin Dashboard
 oas_source: ./openapi.json
 api_base_url: https://api.example.com
 security_config:
@@ -13,50 +14,62 @@ security_config:
     token_type: Bearer
 navigation:
   - label: Resources
-    path: /v1/resources
-    display_fields:
-      - id
-      - name
-      - status
-      - "*"
+    collection:
+      path: /v1/resources
+      display_fields:
+        - id
+        - name
+        - status
+        - "*"
+    item:
+      label: Resource
+      path: /v1/resources/{id}
   - label: User Management
     children:
       - label: Users
-        path: /v1/users
-        display_fields:
-          - user_id
-          - email
-          - created_at
-        list_overrides:
-          hidden:
-            - internal_notes
-          labels:
-            user_id: User ID
-            created_at: Created
-        form_overrides:
-          layout: multi-step
-          steps:
-            - id: identity
-              title: Identity
-              fields:
-                - email
-                - first_name
-                - last_name
-            - id: access
-              title: Access
-              fields:
-                - role
-                - status
-          field_overrides:
+        collection:
+          path: /v1/users
+          display_fields:
+            - user_id
+            - email
+            - created_at
+          list_overrides:
             hidden:
-              - system_flags
+              - internal_notes
             labels:
-              first_name: First name
-              last_name: Last name
-            widgets:
-              status: select
+              user_id: User ID
+              created_at: Created
+          form_overrides:
+            layout: multi-step
+            steps:
+              - id: identity
+                title: Identity
+                fields:
+                  - email
+                  - first_name
+                  - last_name
+              - id: access
+                title: Access
+                fields:
+                  - role
+                  - status
+            field_overrides:
+              hidden:
+                - system_flags
+              labels:
+                first_name: First name
+                last_name: Last name
+              widgets:
+                status: select
+        item:
+          label: User
+          path: /v1/users/{id}
       - label: Roles
-        path: /v1/roles
-        display_fields:
-          - role_id
-          - name
+        collection:
+          path: /v1/roles
+          display_fields:
+            - role_id
+            - name
+        item:
+          label: Role
+          path: /v1/roles/{id}

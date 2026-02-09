@@ -5,8 +5,10 @@ import { AppProviders } from "./providers/AppProviders";
 import { App } from "./App";
 import { Buffer } from "buffer";
 
-if (!globalThis.Buffer) {
-  globalThis.Buffer = Buffer;
+const globalWithBuffer = globalThis as typeof globalThis & { Buffer?: typeof Buffer };
+
+if (!globalWithBuffer.Buffer) {
+  globalWithBuffer.Buffer = Buffer;
 }
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

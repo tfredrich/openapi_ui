@@ -12,6 +12,8 @@ import { resolveBaseUrl } from "../services/baseUrl";
 import { apiRequest } from "../services/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { NavItem } from "../../schemas/config.schema";
+import { IChangeEvent } from "@rjsf/core";
+import { getNavCollectionPath, getNavFormOverrides } from "../utils/navigation";
 
 type FormPageProps = {
   mode: "create" | "edit";
@@ -44,6 +46,9 @@ export function FormPage({ mode }: FormPageProps) {
   const formOverrides = config?.navigation
     ? findFormOverrides(config.navigation, resolvedPath)
     : undefined;
+  const itemLabel = config?.navigation
+    ? findItemLabel(config.navigation, resolvedPath) ?? "Resource"
+    : "Resource";
 
   const uiSchema = useMemo(() => {
     const fieldOverrides = formOverrides?.field_overrides;
@@ -52,7 +57,7 @@ export function FormPage({ mode }: FormPageProps) {
       ui["ui:order"] = fieldOverrides.order;
     }
     if (fieldOverrides?.hidden?.length) {
-      fieldOverrides.hidden.forEach((field) => {
+      fieldOverrides.hidden.forEach((field: string) => {
         ui[field] = { ...(ui[field] as object), "ui:widget": "hidden" };
       });
     }
@@ -85,7 +90,8 @@ export function FormPage({ mode }: FormPageProps) {
     }
   }, [formData, formState, mode]);
 
-  const handleSubmit = async ({ formData }: { formData: any }) => {
+  const handleSubmit = async (event: IChangeEvent) => {
+    const formData = event.formData;
     if (!baseUrl || !schema) return;
     setSubmitError(null);
     setIsSubmitting(true);
@@ -128,7 +134,7 @@ export function FormPage({ mode }: FormPageProps) {
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          {mode === "create" ? "Create" : "Update"} Resource
+          {mode === "create" ? "Create" : "Update"} {itemLabel}
         </Typography>
         <Button variant="outlined" onClick={handleCancel}>
           Cancel
@@ -172,12 +178,27 @@ export function FormPage({ mode }: FormPageProps) {
   );
 }
 
-function findFormOverrides(items: NavItem[], path: string | null) {
+function findFormOverrides(
+  items: NavItem[],
+  path: string | null
+): NavItem["collection"]["form_overrides"] | undefined {
   if (!path) return undefined;
   for (const item of items) {
-    if (item.path === path) return item.form_overrides;
+    if (getNavCollectionPath(item) === path) return getNavFormOverrides(item);
     if (item.children) {
       const nested = findFormOverrides(item.children, path);
+      if (nested) return nested;
+    }
+  }
+  return undefined;
+}
+
+function findItemLabel(items: NavItem[], path: string | null): string | undefined {
+  if (!path) return undefined;
+  for (const item of items) {
+    if (getNavCollectionPath(item) === path) return item.item?.label;
+    if (item.children) {
+      const nested = findItemLabel(item.children, path);
       if (nested) return nested;
     }
   }
