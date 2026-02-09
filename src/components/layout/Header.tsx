@@ -1,14 +1,11 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   AppBar,
-  Avatar,
   Box,
   Button,
   Chip,
   IconButton,
   InputAdornment,
-  Menu,
-  MenuItem,
   OutlinedInput,
   Toolbar,
   Typography,
@@ -18,7 +15,6 @@ import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import { useConfigStore } from "../../state/useConfigStore";
-import { useAuthStore } from "../../state/useAuthStore";
 import { isDevAuthBypassEnabled } from "../../services/devAuthBypass";
 
 type HeaderProps = {
@@ -32,12 +28,6 @@ export function Header({ drawerWidth }: HeaderProps) {
     () => new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(new Date()),
     []
   );
-  const { user } = useAuthStore();
-  const userName = user?.name ?? "Admin User";
-  const avatarUrl =
-    user?.avatarUrl ??
-    "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><rect width='100%25' height='100%25' fill='%23d7e4df'/><circle cx='32' cy='24' r='12' fill='%2385a59a'/><rect x='14' y='40' width='36' height='16' rx='8' fill='%2385a59a'/></svg>";
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const isBypassEnabled = isDevAuthBypassEnabled();
 
   return (
@@ -62,6 +52,15 @@ export function Header({ drawerWidth }: HeaderProps) {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          {isBypassEnabled ? (
+            <Chip
+              label="Auth bypass active"
+              size="small"
+              color="warning"
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+          ) : null}
           <OutlinedInput
             size="small"
             placeholder="Search..."
@@ -81,28 +80,6 @@ export function Header({ drawerWidth }: HeaderProps) {
           <IconButton color="inherit">
             <LightModeOutlinedIcon fontSize="small" />
           </IconButton>
-          {isBypassEnabled ? (
-            <Chip
-              label="Auth bypass active"
-              size="small"
-              color="warning"
-              variant="outlined"
-              sx={{ fontWeight: 600 }}
-            />
-          ) : null}
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={(event) => setAnchorEl(event.currentTarget)}
-            startIcon={<Avatar alt={userName} src={avatarUrl} sx={{ width: 28, height: 28 }} />}
-            sx={{ textTransform: "none", borderRadius: 2 }}
-          >
-            {userName}
-          </Button>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-            <MenuItem onClick={() => setAnchorEl(null)}>Settings</MenuItem>
-            <MenuItem onClick={() => setAnchorEl(null)}>Logout</MenuItem>
-          </Menu>
         </Box>
       </Toolbar>
     </AppBar>

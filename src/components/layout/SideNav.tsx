@@ -1,4 +1,18 @@
-import { Box, Collapse, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Collapse,
+  Divider,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  SvgIcon,
+  Typography,
+} from "@mui/material";
 import { useMemo, useState } from "react";
 import { Link as RouterLink, useLocation } from "react-router-dom";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -8,21 +22,43 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import HelpOutlineOutlinedIcon from "@mui/icons-material/HelpOutlineOutlined";
 import FeedbackOutlinedIcon from "@mui/icons-material/FeedbackOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import { useConfigStore } from "../../state/useConfigStore";
 import { encodeCollectionPath } from "../../utils/routes";
 import { NavItem } from "../../../schemas/config.schema";
 import { useAuthStore } from "../../state/useAuthStore";
 
+function VerticalEllipsisIcon() {
+  return (
+    <SvgIcon fontSize="small" viewBox="0 0 24 24">
+      <circle cx="12" cy="5" r="1.75" />
+      <circle cx="12" cy="12" r="1.75" />
+      <circle cx="12" cy="19" r="1.75" />
+    </SvgIcon>
+  );
+}
+
 export function SideNav() {
   const { config } = useConfigStore();
   const location = useLocation();
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
   const { user } = useAuthStore();
 
   const navItems = useMemo(() => config?.navigation ?? [], [config]);
   const appName = config?.name ?? "OpenAPI Admin Console";
   const userName = user?.name ?? "Admin User";
   const userEmail = "admin@example.com";
+  const userInitials = useMemo(
+    () =>
+      userName
+        .split(" ")
+        .map((part) => part[0]?.toUpperCase())
+        .filter(Boolean)
+        .slice(0, 2)
+        .join("") || "AU",
+    [userName]
+  );
 
   const toggle = (key: string) => {
     setOpenMap((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -137,14 +173,71 @@ export function SideNav() {
           </ListItemButton>
         </List>
         <Box sx={{ mt: 1.5, p: 1.5, borderRadius: 2.5, bgcolor: "#ffffff", border: "1px solid #dbe2f0" }}>
-          <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.1 }}>
-            {userName}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {userEmail}
-          </Typography>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+            <Avatar sx={{ width: 34, height: 34, fontSize: 13, bgcolor: "#d9e4ff", color: "#1f3d7a" }}>
+              {userInitials}
+            </Avatar>
+            <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.1 }} noWrap>
+                {userName}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" noWrap>
+                {userEmail}
+              </Typography>
+            </Box>
+            <IconButton
+              size="small"
+              onClick={(event) => setUserMenuAnchor(event.currentTarget)}
+              aria-label="Open user menu"
+            >
+              <VerticalEllipsisIcon />
+            </IconButton>
+          </Box>
         </Box>
       </Box>
+      <Menu
+        anchorEl={userMenuAnchor}
+        open={Boolean(userMenuAnchor)}
+        onClose={() => setUserMenuAnchor(null)}
+        PaperProps={{
+          sx: {
+            width: 240,
+            borderRadius: 3,
+            p: 1,
+            border: "1px solid #dbe2f0",
+            boxShadow: "0 8px 22px rgba(15, 23, 42, 0.12)",
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => setUserMenuAnchor(null)}
+          sx={{
+            border: "2px solid #8bb8ff",
+            borderRadius: 3,
+            mb: 0.5,
+          }}
+        >
+          Profile
+        </MenuItem>
+        <MenuItem onClick={() => setUserMenuAnchor(null)}>My account</MenuItem>
+        <Divider sx={{ my: 1 }} />
+        <MenuItem onClick={() => setUserMenuAnchor(null)}>Add another account</MenuItem>
+        <MenuItem onClick={() => setUserMenuAnchor(null)}>Settings</MenuItem>
+        <Divider sx={{ my: 1 }} />
+        <MenuItem
+          onClick={() => setUserMenuAnchor(null)}
+          sx={{
+            borderRadius: 2,
+            bgcolor: "#f3f4f6",
+            mt: 0.25,
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          Logout
+          <LogoutOutlinedIcon fontSize="small" sx={{ color: "text.secondary" }} />
+        </MenuItem>
+      </Menu>
     </Box>
   );
 }
