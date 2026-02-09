@@ -7,7 +7,13 @@ const drawerWidth = 260;
 
 export function AppShell({ children }: PropsWithChildren) {
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        bgcolor: "#f5f6fa",
+      }}
+    >
       <Header drawerWidth={drawerWidth} />
       <Drawer
         variant="permanent"
@@ -17,13 +23,22 @@ export function AppShell({ children }: PropsWithChildren) {
           [`& .MuiDrawer-paper`]: {
             width: drawerWidth,
             boxSizing: "border-box",
-            borderRight: "1px solid #e6e2d9",
+            borderRight: "1px solid #e5e7eb",
+            bgcolor: "#f8f9fd",
           },
         }}
       >
         <SideNav />
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          px: { xs: 2, md: 3 },
+          pb: { xs: 2, md: 3 },
+          pt: { xs: 10, md: 11 },
+        }}
+      >
         {children}
       </Box>
     </Box>

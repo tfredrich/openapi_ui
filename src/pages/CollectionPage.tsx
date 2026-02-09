@@ -3,6 +3,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -11,18 +12,19 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TablePagination,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
   TextField,
   Typography,
 } from "@mui/material";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import {
+  DataGrid,
+  GridColDef,
+  GridPaginationModel,
+  GridRenderCellParams,
+  GridRowParams,
+} from "@mui/x-data-grid";
 import { buildResourcePath, decodeCollectionPath } from "../utils/routes";
 import { useConfigStore } from "../state/useConfigStore";
 import { NavItem } from "../../schemas/config.schema";
@@ -32,6 +34,15 @@ import { resolveBaseUrl } from "../services/baseUrl";
 import { apiRequest } from "../services/apiClient";
 import { applyDisplayFields, applyListOverrides, extractPropertyKeys, formatCellValue, getSchemaPropertyTitle } from "../utils/schema";
 import { useMemo, useState } from "react";
+
+type CollectionRow = Record<string, unknown>;
+type CollectionResult =
+  | CollectionRow[]
+  | {
+      items?: CollectionRow[];
+      data?: CollectionRow[];
+      total?: number;
+    };
 
 export function CollectionPage() {
   const { collectionPath } = useParams();
@@ -78,7 +89,7 @@ export function CollectionPage() {
     [searchParam, search, pagination, page, rowsPerPage]
   );
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<CollectionResult>({
     queryKey: ["collection", baseUrl, resolvedPath, requestQuery],
     enabled: Boolean(baseUrl && resolvedPath),
     queryFn: () => apiRequest({ baseUrl: baseUrl!, path: resolvedPath!, query: requestQuery }),
@@ -87,8 +98,12 @@ export function CollectionPage() {
   const schema = entry?.get?.responseSchema;
   const hasCreate = Boolean(entry?.post);
   const hasRowActions = Boolean(resourceEntry?.get || resourceEntry?.put || resourceEntry?.delete);
-  const rows = Array.isArray(data) ? data : data?.items ?? data?.data ?? [];
-  const totalCount = typeof data?.total === "number" ? data.total : rows.length;
+  const listData = Array.isArray(data) ? undefined : data;
+  const rows = Array.isArray(data) ? data : listData?.items ?? listData?.data ?? [];
+  const totalCount = typeof listData?.total === "number" ? listData.total : rows.length;
+  const hasServerPagination = Boolean(
+    pagination.pageParam || pagination.limitParam || pagination.offsetParam || pagination.sizeParam
+  );
   const allFields = extractPropertyKeys(schema);
   const fallbackFields = allFields.length > 0 ? allFields : rows[0] ? Object.keys(rows[0]) : [];
   const displayFields = applyDisplayFields(
@@ -99,6 +114,63 @@ export function CollectionPage() {
     ? findListOverrides(config.navigation, resolvedPath)
     : undefined;
   const resolvedFields = applyListOverrides(displayFields, listOverrides);
+  const columns = useMemo<GridColDef<CollectionRow & { __resourceId?: string | number | null }>[]>(
+    () => [
+      ...resolvedFields.map((field) => ({
+        field,
+        headerName: listOverrides?.labels?.[field] ?? getSchemaPropertyTitle(schema, field) ?? field,
+        flex: 1,
+        minWidth: 140,
+        sortable: false,
+        renderCell: (params: GridRenderCellParams<CollectionRow>) =>
+          formatCellValue(params.row?.[field]),
+      })),
+      {
+        field: "__actions",
+        headerName: "Actions",
+        width: 88,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        align: "right",
+        headerAlign: "right",
+        renderCell: (
+          params: GridRenderCellParams<CollectionRow & { __resourceId?: string | number | null }>
+        ) =>
+          hasRowActions ? (
+            <IconButton
+              size="small"
+              onClick={(event) => {
+                event.stopPropagation();
+                const rowId = params.row?.__resourceId;
+                if (rowId === null || rowId === undefined) return;
+                setMenuAnchor(event.currentTarget);
+                setSelectedRowId(rowId);
+              }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          ) : null,
+      },
+    ],
+    [resolvedFields, listOverrides?.labels, schema, hasRowActions]
+  );
+  const gridRows = useMemo(
+    () =>
+      rows.map((row: CollectionRow, index: number) => {
+        const resourceId = getRowId(row, resolvedFields, resourceEntry?.resourceIdParamName);
+        return {
+          id: resourceId ?? `row-${page}-${index}`,
+          __resourceId: resourceId,
+          ...row,
+        };
+      }),
+    [rows, resolvedFields, resourceEntry?.resourceIdParamName, page]
+  );
+  const paginationModel: GridPaginationModel = {
+    page,
+    pageSize: rowsPerPage,
+  };
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string | number) => {
@@ -175,69 +247,45 @@ export function CollectionPage() {
                   No fields available for this collection.
                 </Typography>
               ) : (
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      {resolvedFields.map((field) => (
-                        <TableCell key={field}>
-                          {listOverrides?.labels?.[field] ?? getSchemaPropertyTitle(schema, field) ?? field}
-                        </TableCell>
-                      ))}
-                      <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {rows.map((row: any, index: number) => {
-                      const rowId = getRowId(row, resolvedFields, resourceEntry?.resourceIdParamName);
-                      const to =
-                        rowId && collectionPath && resourceEntry?.get
-                          ? `/${collectionPath}/${encodeURIComponent(String(rowId))}`
-                          : undefined;
-                      return (
-                        <TableRow
-                          key={row?.id ?? index}
-                          hover
-                          onClick={() => {
-                            if (to) navigate(to);
-                          }}
-                          sx={{ cursor: to ? "pointer" : "default" }}
-                        >
-                          {resolvedFields.map((field) => (
-                            <TableCell key={field}>{formatCellValue(row?.[field])}</TableCell>
-                          ))}
-                          <TableCell align="right">
-                            {hasRowActions && (
-                              <IconButton
-                                size="small"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  if (rowId === null || rowId === undefined) return;
-                                  setMenuAnchor(event.currentTarget);
-                                  setSelectedRowId(rowId);
-                                }}
-                              >
-                                <MoreVertIcon fontSize="small" />
-                              </IconButton>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                <Box sx={{ width: "100%" }}>
+                  <DataGrid
+                    rows={gridRows}
+                    columns={columns}
+                    disableRowSelectionOnClick
+                    pagination
+                    paginationMode={hasServerPagination ? "server" : "client"}
+                    rowCount={hasServerPagination ? totalCount : undefined}
+                    pageSizeOptions={[10, 25, 50, 100]}
+                    paginationModel={paginationModel}
+                    onPaginationModelChange={(model: GridPaginationModel) => {
+                      setPage(model.page);
+                      setRowsPerPage(model.pageSize);
+                    }}
+                    autoHeight
+                    onRowClick={(
+                      params: GridRowParams<CollectionRow & { __resourceId?: string | number | null }>
+                    ) => {
+                      const rowId = params.row?.__resourceId;
+                      if (rowId === null || rowId === undefined || !collectionPath || !resourceEntry?.get) return;
+                      navigate(`/${collectionPath}/${encodeURIComponent(String(rowId))}`);
+                    }}
+                    sx={{
+                      borderColor: "#e2e8f0",
+                      "& .MuiDataGrid-columnHeaders": {
+                        bgcolor: "#f8fafc",
+                      },
+                      "& .MuiDataGrid-row:hover": {
+                        cursor: resourceEntry?.get ? "pointer" : "default",
+                      },
+                    }}
+                  />
+                </Box>
               )}
-              {(pagination.pageParam || pagination.limitParam || pagination.offsetParam || pagination.sizeParam) && (
-                <TablePagination
-                  component="div"
-                  count={totalCount}
-                  page={page}
-                  rowsPerPage={rowsPerPage}
-                  onPageChange={(_, newPage) => setPage(newPage)}
-                  onRowsPerPageChange={(event) => {
-                    setRowsPerPage(Number(event.target.value));
-                    setPage(0);
-                  }}
-                  rowsPerPageOptions={[10, 25, 50, 100]}
+              {!hasServerPagination && rows.length > 0 && (
+                <Chip
+                  label={`${rows.length} rows`}
+                  size="small"
+                  sx={{ mt: 1.5 }}
                 />
               )}
             </>

@@ -12,6 +12,7 @@ import { resolveBaseUrl } from "../services/baseUrl";
 import { apiRequest } from "../services/apiClient";
 import { useQuery } from "@tanstack/react-query";
 import { NavItem } from "../../schemas/config.schema";
+import { IChangeEvent } from "@rjsf/core";
 
 type FormPageProps = {
   mode: "create" | "edit";
@@ -52,7 +53,7 @@ export function FormPage({ mode }: FormPageProps) {
       ui["ui:order"] = fieldOverrides.order;
     }
     if (fieldOverrides?.hidden?.length) {
-      fieldOverrides.hidden.forEach((field) => {
+      fieldOverrides.hidden.forEach((field: string) => {
         ui[field] = { ...(ui[field] as object), "ui:widget": "hidden" };
       });
     }
@@ -85,7 +86,8 @@ export function FormPage({ mode }: FormPageProps) {
     }
   }, [formData, formState, mode]);
 
-  const handleSubmit = async ({ formData }: { formData: any }) => {
+  const handleSubmit = async (event: IChangeEvent) => {
+    const formData = event.formData;
     if (!baseUrl || !schema) return;
     setSubmitError(null);
     setIsSubmitting(true);
@@ -172,7 +174,10 @@ export function FormPage({ mode }: FormPageProps) {
   );
 }
 
-function findFormOverrides(items: NavItem[], path: string | null) {
+function findFormOverrides(
+  items: NavItem[],
+  path: string | null
+): NavItem["form_overrides"] | undefined {
   if (!path) return undefined;
   for (const item of items) {
     if (item.path === path) return item.form_overrides;
